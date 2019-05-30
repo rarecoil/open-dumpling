@@ -6,6 +6,10 @@ I specifically chose the OnePlus 5 and 5T because of [this XDA post](https://for
 
 The tutorial above requires you to disable [dm-verity](https://source.android.com/security/verifiedboot/dm-verity) or [disable forced encryption](https://source.android.com/security/encryption/full-disk). We want to keep as many security features as LineageOS and MicroG allow, so we aren't going to do that. (Also, LineageOS 16.0 has issues with forced encryption being off. Flashing Magisk, the disable dm-verity/forceencrypt, and then attempting to encrypt failed on my OnePlus 5T.)
 
+## Known Issues
+
+* Push notifications aren't working. It's likely a known problem in MicroG due to Google moving to FCM from GCM. [I have opened an issue](https://github.com/microg/android_packages_apps_GmsCore/issues/794).
+
 ## Known-good images
 
 Due to GitHub size restrictions, I've placed the known-good images used for this on DigitalOcean. You may use these to test to make sure that you have done everything properly, however, **do not use these in production** as they are likely to be old/out-of-date. These are unmodified from the original sources I downloaded them from.
