@@ -1,0 +1,1 @@
+These are the userscripts used by the lineage build process to inject verity et al.

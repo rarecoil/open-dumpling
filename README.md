@@ -1,54 +1,65 @@
-# Encrypted + Locked + LineageOS 16.0 + MicroG on OnePlus 5T
+# Hardened OnePlus 5T (dumpling) LineageOS Build Pipeline
 
-I have a [OnePlus 5T](https://www.oneplus.com/support/spec/oneplus-5t). Interested in a modern Android device running MicroG and F-Droid, I decided to try to build this device. The problem with most Android hacks is that they require unlocked bootloaders. However, locked bootloaders provide some security guarantees, and I wanted to try to build a solid device with this software.
+This repository contains a full build pipeline for LineageOS 15.1 (Oreo) on the OnePlus 5T. While Lineage's OnePlus support is great, LineageOS disables the [Android Verified Boot](https://source.android.com/security/verifiedboot/avb) system, which is actually supported by Dumpling. This Dockerised build environment is patched to enable AVB 1.0 on the OnePlus 5T, since the OnePlus allows for signing custom operating systems. This build pipeline also downloads TWRP updates and signs the recoveries with the same keys.
 
-I specifically chose the OnePlus 5 and 5T because of [this XDA post](https://forum.xda-developers.com/oneplus-5/how-to/guide-relock-bootloader-custom-rom-t3849299) that showed a way to allow for a locked bootloader with a custom ROM. Many Android devices will not allow this. It helps that the OnePlus line is extremely overpowered for its release date, cheap used from Android enthusiasts, has extreme enthusiast support, and (hopefully) will have support for a long time because of these things.
+The OnePlus 5T is used because it is easy-to-buy older hardware that is enthusiast-oriented. By maintaining security updates and builds for the 5T yourself, you can keep a very capable device out of [dirty e-waste recycling](https://www.cawrecycles.org/background-on-e-waste) and hopefully continue to use it with security patches for years after it is no longer supported by OnePlus.
 
-The tutorial above requires you to disable [dm-verity](https://source.android.com/security/verifiedboot/dm-verity) or [disable forced encryption](https://source.android.com/security/encryption/full-disk). We want to keep as many security features as LineageOS and MicroG allow, so we aren't going to do that. (Also, LineageOS 16.0 has issues with forced encryption being off. Flashing Magisk, the disable dm-verity/forceencrypt, and then attempting to encrypt failed on my OnePlus 5T.)
+This repository will allow you to build your own images from the Lineage repositories, build OTA images, and sign all of it with your own release keys so you can relock the bootloader on the OnePlus and gain some better security guarantees. 
 
-## Known Issues
+## Build Features
 
-* Push notifications aren't working. It's likely a known problem in MicroG due to Google moving to FCM from GCM. [I have opened an issue](https://github.com/microg/android_packages_apps_GmsCore/issues/794).
+This repo is in active development and will change with more hardening fixes over time as I prove they are stable enough for this hardware. I will generally merge security + privacy fixes into this; if you wish to port features from [Graphene](https://grapheneos.org/) I will add them here. **Google Play Services or OpenGapps will not be supported officially by this pipeline at this time.**
 
-## Known-good images
+* Signing keys you control - your build pipeline will generate signing keys specific to you
+* Android Verified Boot 1.0 Support (signed recoveries and boot images)
+* Full-disk encryption
+* Mozilla + Nominatim backends
+* [MicroG framework](https://microg.org/) instead of Google Play Services
+* [FDroid](https://f-droid.org/) for FOSS applications
 
-Due to GitHub size restrictions, I've placed the known-good images used for this on DigitalOcean. You may use these to test to make sure that you have done everything properly, however, **do not use these in production** as they are likely to be old/out-of-date. These are unmodified from the original sources I downloaded them from.
+### Downloading apps from the Play Store
 
-* [VerifiedBootSigner-V8.zip](https://rarecoil.sfo2.digitaloceanspaces.com/ecophone/dumpling/known-good/VerifiedBootSigner-v8.zip)
-* [addonsu-16.0-arm64-signed.zip](https://rarecoil.sfo2.digitaloceanspaces.com/ecophone/dumpling/known-good/addonsu-16.0-arm64-signed.zip)
-* [lineage-16.0-20190506-microG-dumpling.zip](https://rarecoil.sfo2.digitaloceanspaces.com/ecophone/dumpling/known-good/lineage-16.0-20190506-microG-dumpling.zip)
-
-
-## Preparing signing keys, Verified Boot Signer, and Recovery
-
-You will need to sign your recovery.img and your boot.img for the bootloader to be locked. If you don't have keys, run `gen-signing-keys.sh` that exists in this folder to generate RSA keys for the signing process.
-
-**To generate keys,** run `gen-signing-keys.sh`. This will use openssl to generate keys.
-
-**To update the boot signer ZIP**, run `update-boot-signer.sh`. This will add your generated key files to Chainfire's boot signer ZIP.
-
-**To sign recovery**, run `sign-recovery.sh` with the argument being the TWRP recovery you want to sign.
+Since the Play Store is not included, you will need to use an alternative Google Play client to download the applications. The _Yalp Store_ and _Aurora Store_ applications in F-Droid allow installs from the Google Play store.
 
 
-## Wiping the device in TWRP
+## System Requirements
 
-Open TWRP, and go to "Advanced Wipe". Completely wipe **Dalvik / ART Cache**, **Cache**, **System**, **Vendor**, and **data**. This gives us a no-OS-installed device. Now, we flash our work.
+You will need a system capable of building LineageOS. At the time of writing I would recommend:
 
-## Flashing
+* 16 GB RAM minimum
+* NVMe with 200GB free space
+* As many cores as you possibly can throw at it
+* Ubuntu 18.04 LTS
+* Docker from [Docker's official repositories](https://docs.docker.com/install/linux/docker-ce/ubuntu/)
 
-You can use `adb sideload` or MTP them to TWRP and install from there. I use ADB Sideload, so go to **Advanced > ADB Sideload** and swipe to start sideload. Then, from your computer, load the OS and the SU add-on. Then, flash with your custom VerifiedBootSigner containing your signing keys, and wipe cache at this stage as well just for good measure.
+My development workstation is an Intel Core i5-8250U (4c/8t) with 32GB RAM and a 2TB NVMe disk. My personal build and OTA server is a dual-processor Intel Xeon E5-2650L v2 (20c/40t) with 160GB RAM. Initial builds on my workstation take about 3 hours; the Xeon server takes about half that time.
 
-````
-adb sideload lineage-16.0-20190506-microG-dumpling.zip
-adb sideload addonsu-16.0-arm64-signed.zip 
-adb sideload VerifiedBootSigner-v8.zip 
-````
+## Server Setup
 
-Reboot from TWRP **to the bootloader**, *not the system you have just flashed*, and lock the bootloader:
+Clone this repository to the location you want to store all your files. Being on SSD or a bcache-backed disk set will make the builds significantly faster.
 
-```
-fastboot oem lock
-```
+Run `python install.py` from this repository. The installation script will download the Docker image and configure the scripts/patches required to enable the features above.
 
-The OnePlus will show that the "device has loaded a different operating system" and boot into TWRP recovery once. If you have a signature mismatch, you will see an error image that your device is corrupt. If so, re-sign your recovery, make sure your VerifiedBootSigner 1) contained your keys and 2) actually sideloaded, and then try again.
+> **Advanced Users**: If you are running an OTA Server or want to make changes to the build process, modify `config.ini`.
+
+## Initial Device Flashing
+
+You will need `fastboot` and `adb` for initial device setup.
+
+1. Boot into Fastboot mode.
+1. Flash your signed recovery using `fastboot flash recovery your_signed_twrp_version.img`.
+1. Boot from Fastboot into recovery by picking "Recovery mode" from the fastboot menu on the device.
+1. In TWRP, check to wipe everything.
+1. Go back, and choose _ADB Sideload_ from the _Advanced_ menu.
+1. From your computer, `adb sideload lineage-your_version_here.zip`.
+1. **Do not reboot.** Go back, and then to Reboot, and choose "Reboot Bootloader".
+1. From Fastboot with the new device image and recovery, run `fastboot oem lock` from your computer.
+1. The phone will reboot. 
+1. Boot back into Recovery mode.
+1. Choose _Wipe_ and _Format Data_. Completely wipe data.
+1. Reboot. You should reboot into Lineage.
+
+## Bugs
+
+If you have issues with the Lineage build process, [check the upstream Docker image](https://github.com/lineageos4microg/docker-lineage-cicd/) for the bug first. Do not report feature requests, version bumps, devices you want added to this pipeline, et cetera.
 

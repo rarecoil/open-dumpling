@@ -1,0 +1,1 @@
+# Android Verified Boot on OnePlus 5T

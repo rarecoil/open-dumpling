@@ -1,0 +1,14 @@
+diff --git a/device.mk b/device.mk
+index a3be96e..78a38ed 100644
+This patch enables dm-verity for the OnePlus 5T device. Since LineageOS
+is building userdebug builds, we will end up only enabling the boot signing
+process from build/target/product/verity.mk, not dm-verity.
+--- a/device.mk
++++ b/device.mk
+@@ -46,3 +46,6 @@ PRODUCT_COPY_FILES += \
+ 
+ # Inherit from oneplus msm8998-common
+ $(call inherit-product, device/oneplus/msm8998-common/common.mk)
++
++# add boot signer
++$(call inherit-product, build/target/product/verity.mk)
