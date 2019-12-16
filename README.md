@@ -1,5 +1,16 @@
 # Encrypted + Locked + LineageOS 16.0 + MicroG on OnePlus 5T
 
+## This repository has now been archived, as I no longer have a OnePlus 5T for testing/development.
+
+I am moving away from the OnePlus devices, at least for now. I still
+think they are great used devices for Android use, but I think that for
+OSS, [PostmarketOS](https://postmarketos.org/) et al. deserve some attention.
+Some script dev to automate this process began in the `ci-cd` branch,
+but did not get merged into master before I abandoned this project.
+
+
+## Introduction
+
 I have a [OnePlus 5T](https://www.oneplus.com/support/spec/oneplus-5t). Interested in a modern Android device running MicroG and F-Droid, I decided to try to build this device. The problem with most Android hacks is that they require unlocked bootloaders. However, locked bootloaders provide some security guarantees, and I wanted to try to build a solid device with this software.
 
 I specifically chose the OnePlus 5 and 5T because of [this XDA post](https://forum.xda-developers.com/oneplus-5/how-to/guide-relock-bootloader-custom-rom-t3849299) that showed a way to allow for a locked bootloader with a custom ROM. Many Android devices will not allow this. It helps that the OnePlus line is extremely overpowered for its release date, cheap used from Android enthusiasts, has extreme enthusiast support, and (hopefully) will have support for a long time because of these things.
